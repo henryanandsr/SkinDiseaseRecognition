@@ -9,6 +9,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 def remove_bug(answer) :
+    prefixes_to_remove = ["AI:", "Human:"]
+    for prefix in prefixes_to_remove:
+        if answer.startswith(prefix):
+            answer = answer[len(prefix):].lstrip()
     answer = answer.lstrip()
     answers = answer.split('.')
     if len(answers) > 1:
@@ -51,7 +55,11 @@ def main():
         start = time.time()
 
         answer = qa(query)['result']
-        answer = remove_bug(answer) #final answer/response
+        final_answer = remove_bug(answer) #final answer/response
+
+        print("----------final answer------------")
+        print(final_answer)
+        print("----------------------")
 
         end = time.time()
 
