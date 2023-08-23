@@ -7,17 +7,16 @@ import time
 from dotenv import load_dotenv
 
 load_dotenv()
-# html_folder_path = "../chatbot/db/additional_info/html"
-# # Iterate through HTML files in the folder
-# for html_file in os.listdir(html_folder_path):
-#     if html_file.endswith('.html'):
-#         html_file_path = os.path.join(html_folder_path, html_file)
-        
-#         # Load and process HTML content
-#         loader = UnstructuredHTMLLoader(html_file_path, encoding='utf-8')
-#         documents2 = loader.load()
-#         texts2 = text_splitter.split_documents(documents2)
-#         all_texts.extend(texts2)
+
+def remove_bug(answer) :
+    answer = answer.lstrip()
+    answers = answer.split('.')
+    if len(answers) > 1:
+        final_answer = '.'.join(answers[:-1])
+    else :
+        final_answer = answer
+    final_answer = final_answer + '.'
+    return final_answer
 
 def main():
 
@@ -34,10 +33,6 @@ def main():
 
     qa = retrieval_qa(db)
 
-    conversation_history = []
-    mode = 1 # follow up question = 1, no = 0
-    count = 0
-
     # Greetings to start the conversation
     print("Hello! I'm Michie, your friendly and empathetic medical assistant. How can I assist you today?")
     print("Feel free to ask anything about skin diseases or type 'exit' to end.")
@@ -52,37 +47,16 @@ def main():
             break
         if query.strip() == "":
             continue
-        
-        if mode == 1 :
-            count+=1
-
-            # Add the query to the conversation history
-            conversation_history.append(query)
-
-            # Concatenate conversation history to provide context (for checking context)
-            context = "\n".join(conversation_history)
-
-            if conversation_history and count >= 3 :
-                conversation_history.pop(0)
-                conversation_history.pop(0)
-            
-            # Concatenate conversation history to provide context (for answering)
-            context = "\n".join(conversation_history)
-        else :
-            context = query
-            conversation_history = []
-
 
         start = time.time()
 
-        answer = qa(context)['result']
+        answer = qa(query)['result']
+        answer = remove_bug(answer) #final answer/response
 
         end = time.time()
 
-        print(f"\n> Answer (took {round(end - start, 2)} s.):")
 
-        if mode == 1 :
-            conversation_history.append(answer)
+        print(f"\n> Answer (took {round(end - start, 2)} s.):")
 
 
 if __name__ == '__main__':

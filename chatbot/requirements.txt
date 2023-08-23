@@ -1,4 +1,2 @@
-langchain
-faiss-cpu
-gpt4all
-python-dotenv
+langchain==0.0.271
+python-dotenv==1.0.0

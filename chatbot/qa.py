@@ -2,6 +2,8 @@ from langchain.llms import GPT4All
 from langchain.chains import RetrievalQA
 import os
 import argparse
+from langchain.prompts import PromptTemplate
+from langchain.memory import ConversationBufferMemory
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 
 def parse_arguments():
@@ -18,6 +20,26 @@ def parse_arguments():
 
 
 def retrieval_qa(db) :
+
+    template = """
+    Use the following context (delimited by <ctx></ctx>) and the chat history (delimited by <hs></hs>) to answer the question:
+    ------
+    <ctx>
+    {context}
+    </ctx>
+    ------
+    <hs>
+    {history}
+    </hs>
+    ------
+    {question}
+    Answer:
+    """
+    prompt = PromptTemplate(
+        input_variables=["history", "context", "question"],
+        template=template,
+    )
+
     model_type = os.environ.get('MODEL_TYPE')
     model_path = os.environ.get('MODEL_PATH')
     model_n_ctx = os.environ.get('MODEL_N_CTX')
@@ -27,4 +49,15 @@ def retrieval_qa(db) :
     callbacks = [] if args.mute_stream else [StreamingStdOutCallbackHandler()]
     retriever = db.as_retriever(search_kwargs={"k": target_source_chunks})
     llm = GPT4All(model=model_path, max_tokens=model_n_ctx, backend='gptj', n_batch=model_n_batch, callbacks=callbacks, verbose=False)
-    return RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=retriever, return_source_documents= not args.hide_source)
+    return RetrievalQA.from_chain_type(llm=llm,
+                                        chain_type="stuff",
+                                        retriever=retriever,
+                                        return_source_documents= not args.hide_source,
+                                        chain_type_kwargs={
+                                            "verbose":True,
+                                            "prompt":prompt,
+                                            "memory": ConversationBufferMemory(
+                                                memory_key = "history",
+                                                input_key="question"),
+                                            }
+                                        )
