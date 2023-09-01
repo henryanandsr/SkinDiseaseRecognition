@@ -9,17 +9,33 @@ from dotenv import load_dotenv
 load_dotenv()
 
 def remove_bug(answer) :
+
+    # remove prefix
     prefixes_to_remove = ["AI:", "Human:"]
     for prefix in prefixes_to_remove:
         if answer.startswith(prefix):
             answer = answer[len(prefix):].lstrip()
+    
+    # remove whitespace char in front
     answer = answer.lstrip()
+
+    # split with dot
     answers = answer.split('.')
+
+    # remove defects in the back
     if len(answers) > 1:
         final_answer = '.'.join(answers[:-1])
+
+    # error message
+    elif answer == ".":
+        final_answer = "I'm sorry, I encountered an error while processing your request. Please make a new chat. Thank you!"
+    
+    # normal message
     else :
         final_answer = answer
+
     final_answer = final_answer + '.'
+    
     return final_answer
 
 def main():
@@ -55,17 +71,15 @@ def main():
         start = time.time()
 
         answer = qa(query)['result']
+
         final_answer = remove_bug(answer) #final answer/response
 
-        print("----------final answer------------")
         print(final_answer)
-        print("----------------------")
 
         end = time.time()
 
 
         print(f"\n> Answer (took {round(end - start, 2)} s.):")
-
 
 if __name__ == '__main__':
     main()
