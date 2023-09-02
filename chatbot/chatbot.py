@@ -1,13 +1,16 @@
+from flask import Flask, request, jsonify
 from langchain.vectorstores import FAISS
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from ingest import ingest_data
 from qa import retrieval_qa
 import time
-from dotenv import load_dotenv
 import os
+from dotenv import load_dotenv
 from google.auth import impersonated_credentials
 from google.oauth2 import service_account
+
+app = Flask(__name__)
 
 
 # Impersonate service account
@@ -95,5 +98,37 @@ def main():
 
         print(f"\n> Answer (took {round(end - start, 2)} s.):")
 
+@app.route('/ask', methods=['POST'])
+def ask_question():
+    try:
+        data = request.json
+        query = data['query']
+        if not query:
+            return jsonify({'error': 'Missing query parameter'}), 400
+
+        start = time.time()
+        answer = qa(query)['result']
+        final_answer = remove_bug(answer)  # Final answer/response
+        end = time.time()
+
+        response = {
+            'answer': final_answer,
+            'response_time': round(end - start, 2)
+        }
+
+        return jsonify(response), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
-    main()
+    load_dotenv()
+    chunk_size = 512
+    chunk_overlap = 50
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+    embeddings = HuggingFaceEmbeddings()
+    txt_folder_path = "../chatbot/db/additional_info/txt"
+    all_texts = ingest_data(txt_folder_path, text_splitter)
+    db = FAISS.from_documents(all_texts, embeddings)
+    qa = retrieval_qa(db)
+    app.run(host='0.0.0.0', port=5000)
