@@ -5,6 +5,18 @@ from ingest import ingest_data
 from qa import retrieval_qa
 import time
 from dotenv import load_dotenv
+import os
+from google.auth import impersonated_credentials
+from google.oauth2 import service_account
+
+
+# Impersonate service account
+key_path = 'dermaticaai-397114-1a63cb8685a8.json'
+credentials = service_account.Credentials.from_service_account_file(
+    key_path,
+    scopes=['https://www.googleapis.com/auth/cloud-platform'],
+)
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = key_path
 
 load_dotenv()
 
@@ -39,6 +51,8 @@ def remove_bug(answer) :
     return final_answer
 
 def main():
+
+    
 
     chunk_size = 512
     chunk_overlap = 50
