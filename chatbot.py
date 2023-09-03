@@ -49,13 +49,49 @@ def remove_bug(answer) :
     else :
         final_answer = answer
 
-    final_answer = final_answer + '.'
+    punctuation_dict = {
+        ".": "Period",
+        ",": "Comma",
+        "!": "Exclamation Mark",
+        "?": "Question Mark",
+        ";": "Semicolon",
+        ":": "Colon",
+        "-": "Hyphen",
+        "—": "Em Dash",
+        "–": "En Dash",
+        "'": "Apostrophe",
+        "\"": "Quotation Mark",
+        "(": "Left Parenthesis",
+        ")": "Right Parenthesis",
+        "[": "Left Square Bracket",
+        "]": "Right Square Bracket",
+        "{": "Left Curly Brace",
+        "}": "Right Curly Brace",
+        "<": "Less Than Sign",
+        ">": "Greater Than Sign",
+        "/": "Forward Slash",
+        "\\": "Backslash",
+        "|": "Vertical Bar",
+        "_": "Underscore",
+        "@": "At Symbol",
+        "#": "Hash Symbol",
+        "$": "Dollar Sign",
+        "%": "Percent Sign",
+        "^": "Caret",
+        "&": "Ampersand",
+        "*": "Asterisk",
+        "~": "Tilde",
+        "`": "Grave Accent",
+    }
+
+    if final_answer[-1] not in punctuation_dict:
+        final_answer = final_answer + '.'
+    else :
+        final_answer = final_answer
     
     return final_answer
 
 def main():
-
-    
 
     chunk_size = 512
     chunk_overlap = 50
